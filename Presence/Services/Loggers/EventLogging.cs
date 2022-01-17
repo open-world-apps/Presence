@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using Discord;
 using Discord.Commands;
 using Discord.Rest;
@@ -30,10 +29,12 @@ public class EventLogger
 
     {
         if (msg.Exception is not CommandException cmdException) return Task.CompletedTask;
-        
-        Console.WriteLine($"[Command/{msg.Severity}] {cmdException.Command.Aliases[0]}" +
-                          $" failed to execute in {cmdException.Context.Channel}.");
-        Console.WriteLine(cmdException);
+
+        using StreamWriter wr = new("/Logs/command_logs.txt");
+        wr.Write($"[Command/{msg.Severity}] {cmdException.Command.Aliases[0]}" +
+                 $" failed to execute in {cmdException.Context.Channel}");
+        wr.Write($"{cmdException}");
+        wr.Close();
 
         return Task.CompletedTask;
     }
@@ -42,6 +43,9 @@ public class EventLogger
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
     public Task ClientLogger(LogMessage msg)
     {
+        using StreamWriter wr = new("/Logs/client_logs.txt");
+        wr.Write($"[General/{msg.Severity}] {msg}");
+        wr.Close();
         
         return Task.CompletedTask;
     }
